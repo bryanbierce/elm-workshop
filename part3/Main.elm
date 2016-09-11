@@ -6,6 +6,19 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 
 
+type alias Msg =
+    { operation : String, data : Int }
+
+
+type alias SearchModel =
+    { query : String, results : List SearchResult }
+
+
+type alias SearchResult =
+    { id : Int, name : String, stars : Int }
+
+
+initialModel : SearchModel
 initialModel =
     { query = "tutorial"
     , results =
@@ -40,6 +53,17 @@ elmHubHeader =
         ]
 
 
+notId : Int -> SearchResult -> Bool
+notId anId obj =
+    anId /= obj.id
+
+
+removeIdFromResults : Int -> SearchModel -> SearchModel
+removeIdFromResults anId model =
+    { model | results = List.filter (notId anId) model.results }
+
+
+view : SearchModel -> Html Msg
 view model =
     div [ class "content" ]
         [ elmHubHeader
@@ -53,16 +77,17 @@ viewSearchResult result =
         , a [ href ("https://github.com/" ++ result.name), target "_blank" ]
             [ text result.name ]
         , button
-            -- TODO add an onClick handler that sends a DELETE_BY_ID msg
-            [ class "hide-result" ]
+            [ class "hide-result", onClick { operation = "DELETE_BY_ID", data = result.id } ]
             [ text "X" ]
         ]
 
 
+update : Msg -> SearchModel -> SearchModel
 update msg model =
-    -- TODO if msg.operation == "DELETE_BY_ID",
-    -- then return a new model without the given ID present anymore.
-    model
+    if msg.operation == "DELETE_BY_ID" then
+        removeIdFromResults msg.data model
+    else
+        model
 
 
 main =
